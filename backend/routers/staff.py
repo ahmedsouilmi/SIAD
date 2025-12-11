@@ -1,0 +1,32 @@
+from fastapi import APIRouter, HTTPException
+from database import SessionLocal
+from models import Staff
+from pydantic import BaseModel
+from typing import List
+
+router = APIRouter()
+
+class StaffSchema(BaseModel):
+    staff_id: str
+    staff_name: str
+    role: str
+    service: str
+
+    class Config:
+        orm_mode = True
+
+@router.get("/", response_model=List[StaffSchema])
+def get_staff():
+    db = SessionLocal()
+    staff = db.query(Staff).all()
+    db.close()
+    return staff
+
+@router.get("/{staff_id}", response_model=StaffSchema)
+def get_staff_member(staff_id: str):
+    db = SessionLocal()
+    staff = db.query(Staff).filter(Staff.staff_id == staff_id).first()
+    db.close()
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    return staff
