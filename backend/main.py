@@ -3,7 +3,7 @@ from database import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
 from models import Patient
-from routers import patients, staff, services_weekly, staff_schedule
+from routers import patients, staff, services_weekly, staff_schedule, users
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -21,6 +21,7 @@ app.include_router(patients.router, prefix="/patients", tags=["patients"])
 app.include_router(staff.router, prefix="/staff", tags=["staff"])
 app.include_router(services_weekly.router, prefix="/services_weekly", tags=["services_weekly"])
 app.include_router(staff_schedule.router, prefix="/staff_schedule", tags=["staff_schedule"])
+app.include_router(users.router, tags=["users"])
 
 
 app.add_middleware(

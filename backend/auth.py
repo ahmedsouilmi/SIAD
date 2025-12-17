@@ -1,3 +1,38 @@
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
+from database import SessionLocal
+from models import User
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+
+# Dependency to get DB session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Dependency to get current user from JWT
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    payload = decode_access_token(token)
+    if payload is None:
+        raise credentials_exception
+    username = payload.get("sub")
+    role = payload.get("role")
+    if username is None or role is None:
+        raise credentials_exception
+    # Try to find user by username or staff_id
+    user = db.query(User).filter((User.username == username) | (User.staff_id == username)).first()
+    if user is None:
+        raise credentials_exception
+    return {"username": username, "role": role, "user": user}
 # backend/auth.py
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
