@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, status
+from auth import get_current_user
 from database import SessionLocal
 from models import ServiceWeekly
 from pydantic import BaseModel
@@ -22,8 +23,18 @@ class ServiceWeeklySchema(BaseModel):
         orm_mode = True
 
 @router.get("/", response_model=List[ServiceWeeklySchema])
-def get_services_weekly():
+def get_services_weekly(current=Depends(get_current_user)):
+    # Admin sees all services; staff sees only their service's weekly entries
+    if current["role"] not in ["admin", "staff"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     db = SessionLocal()
-    services = db.query(ServiceWeekly).all()
+    if current["role"] == "admin":
+        services = db.query(ServiceWeekly).all()
+    else:
+        staff_service = getattr(current["user"], "service", None)
+        if not staff_service:
+            db.close()
+            return []
+        services = db.query(ServiceWeekly).filter(ServiceWeekly.service == staff_service).all()
     db.close()
     return services

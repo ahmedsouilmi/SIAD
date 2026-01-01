@@ -1,35 +1,73 @@
-import PatientsTable from "./components/PatientsTable";
-import StaffTable from "./components/StaffTable";
-import ServicesWeeklyTable from "./components/ServicesWeeklyTable";
-import StaffScheduleTable from "./components/StaffScheduleTable";
-import ServicesWeeklyChart from "./components/ServicesWeeklyChart";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+// import PatientsTable from "./components/PatientsTable";
 
-function App() {
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center">SIAD Hospital Dashboard</h1>
+import PatientsListPage from "./pages/admin/PatientsListPage";
+import ServicesWeeklyListPage from "./pages/admin/ServicesWeeklyListPage";
+import Login from "./components/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import StaffDashboard from "./pages/staff/StaffDashboard";
+import StaffListPage from "./pages/admin/StaffListPage";
+import StaffSchedulePage from "./pages/admin/StaffSchedulePage";
 
-      <ServicesWeeklyChart />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded shadow p-4">
-          <PatientsTable />
-        </div>
-        <div className="bg-white rounded shadow p-4">
-          <StaffTable />
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <div className="bg-white rounded shadow p-4">
-          <ServicesWeeklyTable />
-        </div>
-        <div className="bg-white rounded shadow p-4">
-          <StaffScheduleTable />
-        </div>
-      </div>
-    </div>
-  );
-}
+
+const App = () => (
+  <Router>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff"
+        element={
+          <ProtectedRoute allowedRoles={["staff"]}>
+            <StaffDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/patients"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "staff"]}>
+            <PatientsListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff/list"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <StaffListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff-schedule"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "staff"]}>
+            <StaffSchedulePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services-weekly"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <ServicesWeeklyListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/login" />} />
+    </Routes>
+  </Router>
+);
 
 export default App;

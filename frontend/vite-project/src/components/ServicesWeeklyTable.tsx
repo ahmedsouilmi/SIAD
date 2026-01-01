@@ -23,6 +23,25 @@ const ServicesWeeklyTable = () => {
 
   return (
     <div>
+      {/* Scoped style for morale badge */}
+      <style>{`
+        .morale-badge {
+          display: inline-block;
+          background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+          color: #fff;
+          border-radius: 0.75rem;
+          font-weight: 700;
+          font-size: 1rem;
+          padding: 0.45rem 1.3rem;
+          letter-spacing: 0.03em;
+          box-shadow: 0 1px 4px 0 rgba(30,41,59,0.10);
+          border: 2px solid #1e40af;
+          outline: none;
+          min-width: 2.7em;
+          text-align: center;
+          transition: background 0.2s, color 0.2s;
+        }
+      `}</style>
       <h2>Weekly Services</h2>
       <table>
         <thead>
@@ -50,7 +69,6 @@ const ServicesWeeklyTable = () => {
               <td>{s.patients_admitted}</td>
               <td>{s.patients_refused}</td>
               <td>{s.patient_satisfaction}</td>
-              <td>{s.staff_morale}</td>
               <td>{s.event}</td>
             </tr>
           ))}
