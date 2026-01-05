@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
+import logo from "../assets/logo.svg";
 
 const Login: React.FC = () => {
   const { login, user } = useAuth();
@@ -11,14 +12,17 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
-      if (user.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/staff");
-      }
+    console.log("Login useEffect user:", user);
+    if (!user) return;
+    // Only navigate if user is set and role is present
+    if (user.role === "admin") {
+      navigate("/admin", { replace: true });
+    } else if (user.role === "staff" || user.role === "doctor" || user.role === "nurse" || user.role === "nursing_assistant") {
+      navigate("/staff", { replace: true });
     }
-  }, [user, navigate]);
+    // Only run once after login
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,10 +39,8 @@ const Login: React.FC = () => {
       <div className="bg-white p-10 rounded-2xl shadow-xl w-96">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src="/logo.png" alt="Hospital Logo" className="h-16 w-16" />
+          <img src={logo} alt="SIAD Logo" className="h-12" />
         </div>
-
-        <h2 className="text-3xl font-bold mb-6 text-center text-blue-800">Hospital Login</h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input

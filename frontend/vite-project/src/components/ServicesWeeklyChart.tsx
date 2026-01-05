@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { fetchServicesWeekly } from "../api/siadAPI";
+import { useAuth } from "../components/AuthContext";
+import { fetchServicesWeekly, fetchServicesWeeklyForStaff } from "../api/siadAPI";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 interface ServiceWeekly {
@@ -12,9 +13,26 @@ interface ServiceWeekly {
 }
 
 const ServicesWeeklyChart = () => {
+  const { user } = useAuth();
   const [data, setData] = useState<ServiceWeekly[]>([]);
 
-  useEffect(() => { fetchServicesWeekly().then(d => setData(d)); }, []);
+  useEffect(() => {
+    if (!user) {
+      setData([]);
+      return;
+    }
+    if (user.role === "staff") {
+      fetchServicesWeeklyForStaff().then(d => {
+        setData(d);
+      });
+    } else if (user.role === "admin") {
+      fetchServicesWeekly().then(d => {
+        setData(d);
+      });
+    } else {
+      setData([]);
+    }
+  }, [user]);
 
   return (
     <div className="my-8 p-4 bg-white rounded shadow">

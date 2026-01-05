@@ -3,7 +3,7 @@ from database import Base, engine
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal
 from models import Patient
-from routers import patients, staff, services_weekly, staff_schedule, users, kpis
+from routers import patients, staff, services_weekly, staff_schedule, users, kpis, staff_csv, services_weekly_staff, recommendations
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -17,12 +17,17 @@ app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
+
 app.include_router(patients.router, prefix="/patients", tags=["patients"])
 app.include_router(staff.router, prefix="/staff", tags=["staff"])
 app.include_router(services_weekly.router, prefix="/services_weekly", tags=["services_weekly"])
+app.include_router(services_weekly_staff.router, prefix="/services_weekly", tags=["services_weekly_staff"])
 app.include_router(staff_schedule.router, prefix="/staff_schedule", tags=["staff_schedule"])
+app.include_router(recommendations.router, prefix="/recommendations", tags=["recommendations"])
 app.include_router(users.router, tags=["users"])
 app.include_router(kpis.router, prefix="/kpis", tags=["kpis"])
+# Register CSV-based endpoints (no prefix, flat)
+app.include_router(staff_csv.router)
 
 
 app.add_middleware(
@@ -53,14 +58,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         (User.username == form_data.username) | (User.staff_id == form_data.username)
     ).first()
     if user and verify_password(form_data.password, user.hashed_password):
-        access_token = create_access_token({"sub": user.username or user.staff_id, "role": user.role})
-        return {"access_token": access_token, "token_type": "bearer"}
-
-    # If not found in User, check StaffAuth
-    from auth import StaffAuth  # Import here to avoid circular import
-    staff_auth = db.query(StaffAuth).filter(StaffAuth.staff_id == form_data.username).first()
-    if staff_auth and verify_password(form_data.password, staff_auth.password_hash):
-        access_token = create_access_token({"sub": staff_auth.staff_id, "role": staff_auth.role})
+        token_sub = user.staff_id if user.role in ["staff", "doctor", "nurse", "nursing_assistant"] else user.username
+        access_token = create_access_token({"sub": token_sub, "role": user.role})
         return {"access_token": access_token, "token_type": "bearer"}
 
     raise HTTPException(status_code=401, detail="Incorrect username or password")

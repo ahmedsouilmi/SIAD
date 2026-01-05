@@ -52,39 +52,14 @@ const CardKPI: FC<CardKPIProps> = ({
       }}
     >
       {/* No icon or gradient bar */}
-      <div className="card-body d-flex flex-column justify-content-between p-0" style={{height: '100%'}}>
-        <div className="mb-2">
-          <h6 className="card-subtitle text-muted mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-            {title}
-          </h6>
-          {small && (
-            <div style={{ fontSize: '0.82rem', fontWeight: 500, color: '#374151', minHeight: '2.2em' }}>{small}</div>
-          )}
+      <div className="mb-2 text-blue-900 text-sm font-semibold text-center tracking-wide drop-shadow-sm" style={{letterSpacing: '0.02em'}}>{title}</div>
+      <div className="text-2xl font-extrabold text-indigo-600 text-center mb-1 drop-shadow-md" style={{fontFamily: 'Segoe UI, Arial, sans-serif'}}>{value}</div>
+      {small && <div className="text-xs text-blue-400 text-center font-medium">{small}</div>}
+      {delta && (
+        <div className={`text-xs text-center mt-1 ${deltaType === "up" ? "text-green-600" : "text-red-600"}`}>
+          {trend === "up" ? "▲" : trend === "down" ? "▼" : null} {delta}
         </div>
-        <div>
-          <div className="d-flex align-items-end justify-content-between">
-            <h2 className="card-title mb-0" style={{ fontSize: '2rem', fontWeight: 700, color: '#212529' }}>
-              {value}
-            </h2>
-            {(trend || delta) && (
-              <span className={`badge ${
-                (trend === 'up' || deltaType === 'up') ? 'bg-success' : (trend === 'down' || deltaType === 'down') ? 'bg-danger' : 'bg-secondary'
-              }`} style={{ fontSize: '0.75rem' }}>
-                {delta ? (
-                  <>
-                    {deltaType === 'up' ? '↑' : deltaType === 'down' ? '↓' : ''} {delta}
-                  </>
-                ) : trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''}
-              </span>
-            )}
-          </div>
-          {small && (
-            <p className="card-text text-muted mt-2 mb-0" style={{ fontSize: '0.813rem' }}>
-              {small}
-            </p>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 };

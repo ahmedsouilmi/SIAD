@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from auth import get_current_user
 from database import SessionLocal
-from models import Patient
+from models import Patient, Staff
 from pydantic import BaseModel
 from typing import List
 
@@ -27,11 +27,15 @@ def get_patients(current=Depends(get_current_user)):
     if current["role"] == "admin":
         patients = db.query(Patient).all()
     else:
-        # staff: only see patients of their service
-        staff_service = getattr(current["user"], "service", None)
-        if not staff_service:
+        staff_id = getattr(current["user"], "staff_id", None)
+        if not staff_id:
             db.close()
             return []
+        staff_obj = db.query(Staff).filter(Staff.staff_id == staff_id).first()
+        if not staff_obj or not staff_obj.service:
+            db.close()
+            return []
+        staff_service = staff_obj.service
         patients = db.query(Patient).filter(Patient.service == staff_service).all()
     db.close()
     return patients
@@ -47,7 +51,9 @@ def get_patient(patient_id: str, current=Depends(get_current_user)):
         db.close()
         raise HTTPException(status_code=404, detail="Patient not found")
     if current["role"] == "staff":
-        staff_service = getattr(current["user"], "service", None)
+        staff_id = getattr(current["user"], "staff_id", None)
+        staff_obj = db.query(Staff).filter(Staff.staff_id == staff_id).first()
+        staff_service = staff_obj.service if staff_obj else None
         if staff_service is None or patient.service != staff_service:
             db.close()
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")

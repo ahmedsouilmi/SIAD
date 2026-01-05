@@ -7,8 +7,12 @@ import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import StaffDashboard from "./pages/staff/StaffDashboard";
+import StaffPatientsPage from "./pages/staff/StaffPatientsPage";
 import StaffListPage from "./pages/admin/StaffListPage";
 import StaffSchedulePage from "./pages/admin/StaffSchedulePage";
+import MySchedulePage from "./pages/staff/MySchedulePage";
+import WeeklyRecommendationsPage from "./pages/admin/WeeklyRecommendationsPage";
+import MyRecommendationsPage from "./pages/staff/MyRecommendationsPage";
 
 
 
@@ -33,11 +37,20 @@ const App = () => (
           </ProtectedRoute>
         }
       />
+      {/* Admin sees all patients, staff see only their service's patients */}
       <Route
         path="/patients"
         element={
-          <ProtectedRoute allowedRoles={["admin", "staff"]}>
+          <ProtectedRoute allowedRoles={["admin"]}>
             <PatientsListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff/patients"
+        element={
+          <ProtectedRoute allowedRoles={["staff"]}>
+            <StaffPatientsPage />
           </ProtectedRoute>
         }
       />
@@ -52,8 +65,32 @@ const App = () => (
       <Route
         path="/staff-schedule"
         element={
-          <ProtectedRoute allowedRoles={["admin", "staff"]}>
+          <ProtectedRoute allowedRoles={["staff"]}>
+            <MySchedulePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/staff-schedule"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
             <StaffSchedulePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/weekly-recommendations"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <WeeklyRecommendationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/staff/recommendations"
+        element={
+          <ProtectedRoute allowedRoles={["staff"]}>
+            <MyRecommendationsPage />
           </ProtectedRoute>
         }
       />

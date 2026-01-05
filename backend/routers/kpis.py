@@ -48,7 +48,12 @@ def kpis_by_service(current=Depends(get_current_user)):
         ).group_by(ServiceWeekly.service)
 
         if current["role"] == "staff":
-            staff_service = getattr(current["user"], "service", None)
+            from models import Staff
+            staff_id = getattr(current["user"], "staff_id", None)
+            if not staff_id:
+                return []
+            db_staff = db.query(Staff).filter(Staff.staff_id == staff_id).first()
+            staff_service = db_staff.service if db_staff else None
             if not staff_service:
                 return []
             q = q.filter(ServiceWeekly.service == staff_service)
@@ -69,7 +74,12 @@ def kpis_weekly_raw(current=Depends(get_current_user)):
         if current["role"] == "admin":
             rows = db.query(ServiceWeekly).order_by(ServiceWeekly.month, ServiceWeekly.week).all()
         else:
-            staff_service = getattr(current["user"], "service", None)
+            from models import Staff
+            staff_id = getattr(current["user"], "staff_id", None)
+            if not staff_id:
+                return []
+            db_staff = db.query(Staff).filter(Staff.staff_id == staff_id).first()
+            staff_service = db_staff.service if db_staff else None
             if not staff_service:
                 return []
             rows = db.query(ServiceWeekly).filter(ServiceWeekly.service == staff_service).order_by(ServiceWeekly.month, ServiceWeekly.week).all()
@@ -110,7 +120,12 @@ def kpis_trends(current=Depends(get_current_user)):
         ).group_by(ServiceWeekly.month, ServiceWeekly.week).order_by(ServiceWeekly.month, ServiceWeekly.week)
 
         if current["role"] == "staff":
-            staff_service = getattr(current["user"], "service", None)
+            from models import Staff
+            staff_id = getattr(current["user"], "staff_id", None)
+            if not staff_id:
+                return []
+            db_staff = db.query(Staff).filter(Staff.staff_id == staff_id).first()
+            staff_service = db_staff.service if db_staff else None
             if not staff_service:
                 return []
             q = q.filter(ServiceWeekly.service == staff_service)

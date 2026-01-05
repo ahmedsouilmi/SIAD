@@ -28,11 +28,25 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     role = payload.get("role")
     if username is None or role is None:
         raise credentials_exception
+    # Normalize roles so staff-like accounts have consistent permissions
+    if role == "doctor":
+        role = "staff"
     # Try to find user by username or staff_id
     user = db.query(User).filter((User.username == username) | (User.staff_id == username)).first()
     if user is None:
         raise credentials_exception
-    return {"username": username, "role": role, "user": user}
+    # Build returned principal
+    user_dict = {"username": username, "role": role, "user": user}
+
+    # Attach service for staff by looking up hospital_staff (users table doesn't store service)
+    if role == "staff":
+        from models import Staff  # local import to avoid import cycles
+        staff_id = getattr(user, "staff_id", None) or username
+        staff_row = db.query(Staff).filter(Staff.staff_id == staff_id).first()
+        if staff_row is not None:
+            user_dict["service"] = getattr(staff_row, "service", None)
+            user_dict["staff_name"] = getattr(staff_row, "staff_name", None)
+    return user_dict
 # backend/auth.py
 from passlib.context import CryptContext
 from datetime import datetime, timedelta

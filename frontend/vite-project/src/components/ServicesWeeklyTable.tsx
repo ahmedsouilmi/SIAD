@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { fetchServicesWeekly } from "../api/siadAPI";
+import { useAuth } from "../components/AuthContext";
+import { fetchServicesWeekly, fetchServicesWeeklyForStaff } from "../api/siadAPI";
 
 interface ServiceWeekly {
   week: number;
@@ -15,11 +16,24 @@ interface ServiceWeekly {
 }
 
 const ServicesWeeklyTable = () => {
+  const { user } = useAuth();
   const [services, setServices] = useState<ServiceWeekly[]>([]);
 
   useEffect(() => {
-    fetchServicesWeekly().then(data => setServices(data));
-  }, []);
+    if (!user) {
+      setServices([]);
+      return;
+    }
+    if (user.role === "staff") {
+      fetchServicesWeeklyForStaff().then(setServices).catch(() => setServices([]));
+      return;
+    }
+    if (user.role === "admin") {
+      fetchServicesWeekly().then(setServices).catch(() => setServices([]));
+      return;
+    }
+    setServices([]);
+  }, [user]);
 
   return (
     <div>

@@ -13,6 +13,8 @@ class UserOut(BaseModel):
     username: Optional[str]
     staff_id: Optional[str]
     role: str
+    staff_name: Optional[str] = None
+    service: Optional[str] = None
 
     class Config:
         orm_mode = True

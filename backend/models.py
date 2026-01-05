@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean
+from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime
 from database import Base
 
 class Patient(Base):
@@ -51,3 +51,22 @@ class User(Base):
     hashed_password = Column(String)
     role = Column(String)  # "admin" or "staff"
     is_active = Column(Boolean, default=True)
+
+
+class Recommendation(Base):
+    __tablename__ = "recommendations"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    week = Column(Integer, index=True)
+    staff_id = Column(String, index=True)
+    staff_name = Column(String)
+    role = Column(String)
+    current_service = Column(String)
+    hours_worked = Column(Float)
+    recommended_service = Column(String)
+    justification = Column(String)
+
+    status = Column(String, default="PENDING", index=True)  # PENDING | APPROVED | REJECTED
+    decided_by = Column(String, nullable=True)
+    decided_at = Column(DateTime, nullable=True)

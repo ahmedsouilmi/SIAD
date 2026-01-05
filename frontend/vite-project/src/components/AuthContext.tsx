@@ -1,10 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
 import api from "../api/axiosConfig";
 
 interface User {
   username: string;
   role: string;
+  staff_id?: string;
+  staff_name?: string;
+  service?: string;
 }
 
 interface AuthContextType {
@@ -35,7 +38,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     // Fetch user info
     const userRes = await api.get("/me");
-    setUser(userRes.data);
+    console.log("/me response:", userRes.data);
+    let userData = userRes.data;
+    // If staff, fetch personal info from /staff_info
+    if (userData.role === "staff" && userData.staff_id) {
+      try {
+        const staffRes = await api.get("/staff_info");
+        console.log("/staff_info response:", staffRes.data);
+        userData = { ...userData, ...staffRes.data };
+      } catch (e) { console.error("/staff_info error", e); }
+    }
+    if (userData.role === "doctor" || userData.role === "nurse" || userData.role === "nursing_assistant") {
+      userData.role = "staff";
+    }
+    setUser(userData);
+    console.log("setUser called with:", userData);
   };
 
   const logout = () => {

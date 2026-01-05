@@ -22,19 +22,16 @@ class ServiceWeeklySchema(BaseModel):
     class Config:
         orm_mode = True
 
-@router.get("/", response_model=List[ServiceWeeklySchema])
-def get_services_weekly(current=Depends(get_current_user)):
-    # Admin sees all services; staff sees only their service's weekly entries
-    if current["role"] not in ["admin", "staff"]:
+@router.get("/staff", response_model=List[ServiceWeeklySchema])
+def get_services_weekly_for_staff(current=Depends(get_current_user)):
+    # Only staff can access this endpoint
+    if current["role"] != "staff":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     db = SessionLocal()
-    if current["role"] == "admin":
-        services = db.query(ServiceWeekly).all()
-    else:
-        staff_service = current.get("service") or getattr(current["user"], "service", None)
-        if not staff_service:
-            db.close()
-            return []
-        services = db.query(ServiceWeekly).filter(ServiceWeekly.service == staff_service).all()
+    staff_service = current.get("service") or getattr(current["user"], "service", None)
+    if not staff_service:
+        db.close()
+        return []
+    services = db.query(ServiceWeekly).filter(ServiceWeekly.service == staff_service).all()
     db.close()
     return services

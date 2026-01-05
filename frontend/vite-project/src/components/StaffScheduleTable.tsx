@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../components/AuthContext";
 import { fetchStaffSchedule } from "../api/siadAPI";
 
 interface StaffSchedule {
@@ -11,11 +12,16 @@ interface StaffSchedule {
 }
 
 const StaffScheduleTable = () => {
+  const { user } = useAuth();
   const [schedule, setSchedule] = useState<StaffSchedule[]>([]);
 
   useEffect(() => {
-    fetchStaffSchedule().then(data => setSchedule(data));
-  }, []);
+    if (user && user.staff_id) {
+      fetchStaffSchedule().then(data => {
+        setSchedule(data);
+      });
+    }
+  }, [user]);
 
   return (
     <div>

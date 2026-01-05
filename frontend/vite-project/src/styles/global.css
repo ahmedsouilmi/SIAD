@@ -1,0 +1,10 @@
+@media (min-width: 992px) {
+    .main-content {
+        margin-left: 240px;
+    }
+}
+
+.sidebar-container {
+    width: 240px;
+    transition: transform 0.3s ease-in-out;
+}

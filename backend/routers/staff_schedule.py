@@ -27,10 +27,27 @@ def get_staff_schedule(current=Depends(get_current_user)):
         schedule = db.query(StaffSchedule).all()
     else:
         # staff: only see their own schedule
-        staff_id = getattr(current["user"], "staff_id", None)
+        staff_id = current.get("username") or getattr(current["user"], "staff_id", None)
         if not staff_id:
             db.close()
             return []
         schedule = db.query(StaffSchedule).filter(StaffSchedule.staff_id == staff_id).all()
     db.close()
     return schedule
+
+
+@router.get("/me", response_model=List[StaffScheduleSchema])
+def get_my_staff_schedule(current=Depends(get_current_user)):
+    if current["role"] not in ["admin", "staff"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    db = SessionLocal()
+    try:
+        if current["role"] != "staff":
+            return []
+        staff_id = current.get("username") or getattr(current["user"], "staff_id", None)
+        if not staff_id:
+            return []
+        schedule = db.query(StaffSchedule).filter(StaffSchedule.staff_id == staff_id).all()
+        return schedule
+    finally:
+        db.close()
